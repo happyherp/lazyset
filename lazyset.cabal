@@ -72,6 +72,14 @@ library
 Test-Suite test
     type:       exitcode-stdio-1.0
     main-is:    LazySetTest.hs
-    build-depends: base, HUnit
+    build-depends: base, HUnit, containers
+    default-language:    Haskell2010
+    
+    
+    
+Benchmark bench
+    type:       exitcode-stdio-1.0
+    main-is:    Benchmark.hs
+    build-depends: base, time, containers
     default-language:    Haskell2010
     
