@@ -3,17 +3,19 @@ module LazySet where
 
 import qualified Data.List as List
 import qualified Data.Set as NSet
+import qualified Data.List.Ordered as OList
 import Data.Ord(comparing)
 
-import qualified Data.Foldable as Foldable
 
 
 data Direction = ASC | DESC
-data LazySet a = LazySet Direction [NSet.Set a]
+    deriving (Eq,Show)
     
-instance Foldable.Foldable (LazySet) where 
-
-    foldMap f (LazySet _ sets) =  undefined -- foldMap $  foldMap sets
+data LazySet a = LazySet Direction [NSet.Set a]
+    deriving (Eq, Show)
+    
+empty :: Ord a => LazySet a    
+empty = fromList []
     
     
 member :: Ord a => a -> LazySet a ->  Bool
@@ -23,7 +25,24 @@ member e (LazySet dir sets) = findIn sets
             Nothing -> False
             Just x ->  x == e || findIn rest
           lookup = case dir of ASC -> NSet.lookupLE; DESC -> NSet.lookupGE
-                                 
+      
+
+
+spanAntitone :: Ord a => (a -> Bool) -> LazySet a -> (LazySet a, LazySet a)
+spanAntitone pred (LazySet dir sets) = let
+    (minmax, cpred)= if dir == ASC then (NSet.findMax,pred) else (NSet.findMin, not . pred)
+    (lesser, (middle:higher)) = List.span (pred . minmax) sets
+    (middleLesser, middleHigher) = NSet.spanAntitone cpred middle
+    in (LazySet dir (lesser++[middleLesser]), LazySet dir (middleHigher:higher))
+    
+    
+union :: Ord a => LazySet a -> LazySet a -> LazySet a
+union s1@(LazySet d1 _) s2@(LazySet d2 _) | d1 == d2 = let  
+    (fromList,cmp) = if d1 == ASC then (fromAscList, comparing id) 
+                                  else (fromDescList, flip (comparing id))
+    in fromList $ OList.unionBy cmp (toList s1) (toList s2)
+
+      
 {-         
 lookupLT :: Ord a => a -> LazySet a -> Maybe a
 lookupLT e (LazySet ASC sets) =  let 
@@ -39,18 +58,18 @@ build level xs = let
     in (NSet.fromList elementsForThisLevel):(build (level + 1) elementsFurtherDown)
     
     
-fromListAsc :: Ord a => [a] -> LazySet a
-fromListAsc xs = LazySet ASC (build 0 (checkDir xs))
+fromAscList :: Ord a => [a] -> LazySet a
+fromAscList xs = LazySet ASC (build 0 (checkDir xs))
     where checkDir (a:b:s)| a > b = error "Elements must be ascending." 
           checkDir  xs = xs                  
 
 
 fromList :: Ord a => [a] -> LazySet a
-fromList = fromListAsc
+fromList = fromAscList
           
           
-fromListDesc :: Ord a => [a] -> LazySet a
-fromListDesc xs = LazySet DESC (build 0 (checkDir xs))
+fromDescList :: Ord a => [a] -> LazySet a
+fromDescList xs = LazySet DESC (build 0 (checkDir xs))
     where checkDir (a:b:s)| a < b = error "Elements must be descending." 
           checkDir  xs = xs          
           
