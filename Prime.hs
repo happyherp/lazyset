@@ -40,7 +40,7 @@ products n factors = let
     in myMergeAll $  map f factors    
 -}  
 
-
+{-
 products :: Integral a => Show a => Int -> [a] -> [a]
 products n factors = map product $  products2 n factors
 
@@ -50,10 +50,17 @@ products2 1 factors = map (:[]) factors
 products2 n factors = let 
     step (lowest:rest) = map (lowest:) $ products2 (n-1) (lowest:rest)
     in myMergeAllBy (comparing product) $ map step $ init $ tails factors
-{-
+
 -}
+
+allProducts ::  Integral a => Show a => [a] -> [[a]]
+allProducts factors =  let 
+    productsByFactors = iterate addFactor $ map (:[]) factors
+    addFactor products = myMergeAllBy (comparing product) $ map (\f->[f:term | term<-products, f <= head term]) factors 
+    in myMergeAllBy (comparing product) (tail productsByFactors)
     
-composites = mergeAll $ map (\n -> products n primes) [2..]
+    
+composites = map product $ allProducts primes
                 
 primes :: [Integer]
 primes = 2:(minus [3..] composites)
