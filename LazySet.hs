@@ -4,14 +4,10 @@ module LazySet where
 import qualified Data.List as List
 import qualified Data.Set as NSet
 import qualified Data.List.Ordered as OList
-import Data.Ord(comparing)
+import Data.Ord
 
-
-
-data Direction = ASC | DESC
-    deriving (Eq,Show)
     
-data LazySet a = LazySet Direction [NSet.Set a]
+data LazySet a = LazySet [NSet.Set a]
     deriving (Eq, Show)
     
 empty :: Ord a => LazySet a    
@@ -19,36 +15,26 @@ empty = fromList []
     
     
 member :: Ord a => a -> LazySet a ->  Bool
-member e (LazySet dir sets) = findIn sets
+member e (LazySet sets) = findIn sets
     where findIn [] = False
-          findIn (set:rest) = case lookup e set of 
+          findIn (set:rest) = case NSet.lookupLE e set of 
             Nothing -> False
             Just x ->  x == e || findIn rest
-          lookup = case dir of ASC -> NSet.lookupLE; DESC -> NSet.lookupGE
       
 
 
 spanAntitone :: Ord a => (a -> Bool) -> LazySet a -> (LazySet a, LazySet a)
-spanAntitone pred (LazySet dir sets) = let
-    (minmax, cpred)= if dir == ASC then (NSet.findMax,pred) else (NSet.findMin, not . pred)
-    (lesser, (middle:higher)) = List.span (pred . minmax) sets
-    (middleLesser, middleHigher) = NSet.spanAntitone cpred middle
-    in (LazySet dir (lesser++[middleLesser]), LazySet dir (middleHigher:higher))
+spanAntitone pred (LazySet sets) = let
+    (lesser, (middle:higher)) = List.span (pred . NSet.findMax) sets
+    (middleLesser, middleHigher) = NSet.spanAntitone pred middle
+    in (LazySet (lesser++[middleLesser]), LazySet (middleHigher:higher))
     
     
 union :: Ord a => LazySet a -> LazySet a -> LazySet a
-union s1@(LazySet d1 _) s2@(LazySet d2 _) | d1 == d2 = let  
-    (fromList,cmp) = if d1 == ASC then (fromAscList, comparing id) 
-                                  else (fromDescList, flip (comparing id))
-    in fromList $ OList.unionBy cmp (toList s1) (toList s2)
+union s1 s2 = let  
+    in fromList $ OList.union (toList s1) (toList s2)
 
-      
-{-         
-lookupLT :: Ord a => a -> LazySet a -> Maybe a
-lookupLT e (LazySet ASC sets) =  let 
-  candidates =  List.takeWhile (\s -> NSet.findMin s < e) sets
-  in foldMap (NSet.lookupLT e) $List.reverse candidates    
--}  
+
 
 build :: Ord a => Int -> [a] -> [NSet.Set a]         
 build _ [] = []
@@ -59,7 +45,7 @@ build level xs = let
     
     
 fromAscList :: Ord a => [a] -> LazySet a
-fromAscList xs = LazySet ASC (build 0 (checkDir xs))
+fromAscList xs = LazySet (build 0 (checkDir xs))
     where checkDir (a:b:s)| a > b = error "Elements must be ascending." 
           checkDir  xs = xs                  
 
@@ -68,20 +54,17 @@ fromList :: Ord a => [a] -> LazySet a
 fromList = fromAscList
           
           
-fromDescList :: Ord a => [a] -> LazySet a
-fromDescList xs = LazySet DESC (build 0 (checkDir xs))
-    where checkDir (a:b:s)| a < b = error "Elements must be descending." 
-          checkDir  xs = xs          
+fromDescList :: Ord a => [a] -> LazySet (Down a)
+fromDescList xs = fromAscList (map Down xs)
           
       
 --List with all elements in the order of the set.
 toList :: Ord a => LazySet a -> [a]
-toList (LazySet dir sets) = concat $ map setToList sets
-   where setToList = case dir of ASC -> NSet.toAscList; DESC -> NSet.toDescList
+toList (LazySet sets) = concat $ map NSet.toAscList sets
    
    
 null :: LazySet a -> Bool
-null (LazySet dir (x:xs)) = True
+null (LazySet (x:xs)) = True
 null _ = False
 
 size = sum . toList 
