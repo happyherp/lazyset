@@ -42,15 +42,13 @@ products n factors = let
 
 
 products :: Integral a => Show a => Int -> [a] -> [a]
-products n factors= map product $  products2 n factors
+products n factors = map product $  products2 n factors
 
 
 products2 :: Integral a => Show a => Int -> [a] -> [[a]]
---products2 n factors | trace (show ("X",n, take 1 factors,"!!")) False = undefined
 products2 1 factors = map (:[]) factors
-products2 n [] = []
 products2 n factors = let 
-    step highFactors = let (lowest:rest) = highFactors in  map (lowest:) $ products2 (n-1) (lowest:rest)
+    step (lowest:rest) = map (lowest:) $ products2 (n-1) (lowest:rest)
     in myMergeAllBy (comparing product) $ map step $ init $ tails factors
 {-
 -}
@@ -63,8 +61,10 @@ primes = 2:(minus [3..] composites)
 isPrime :: Integer -> Bool
 isPrime n = member n primes
 
+
+--Data.List.Ordered.mergeAll hangs on circularly defined lists. 
 myMergeAll :: Ord a => [[a]] -> [a]
-myMergeAll = myMergeAllBy (comparing id)
+myMergeAll = myMergeAllBy compare 
 
 
 myMergeAllBy :: (a->a->Ordering) -> [[a]] -> [a]
