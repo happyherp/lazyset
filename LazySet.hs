@@ -4,6 +4,7 @@ module LazySet where
 import qualified Data.List as List
 import qualified Data.Set as NSet
 import qualified Data.List.Ordered as OList
+import Data.Maybe (isJust)
 import Data.Ord
 
     
@@ -13,13 +14,15 @@ data LazySet a = LazySet [NSet.Set a]
 empty :: Ord a => LazySet a    
 empty = fromList []
     
+lookup :: Ord a => a -> LazySet a -> Maybe a
+lookup e (LazySet sets) = findIn sets
+    where findIn [] = Nothing
+          findIn (set:rest) = case NSet.lookupLE e set of 
+            Nothing -> Nothing
+            Just x ->  if (x == e) then Just x else findIn rest  
     
 member :: Ord a => a -> LazySet a ->  Bool
-member e (LazySet sets) = findIn sets
-    where findIn [] = False
-          findIn (set:rest) = case NSet.lookupLE e set of 
-            Nothing -> False
-            Just x ->  x == e || findIn rest
+member e set = isJust $ LazySet.lookup e set
       
 
 
@@ -68,3 +71,4 @@ null (LazySet (x:xs)) = True
 null _ = False
 
 size = sum . toList 
+
