@@ -1,6 +1,6 @@
 import Test.HUnit
 import System.Exit
-import LazySet
+import Data.Set.Lazy
 
 tests = TestList [basic, fizzbuzztest, infinity]
 
