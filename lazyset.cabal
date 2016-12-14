@@ -13,10 +13,10 @@ name:                lazyset
 version:             0.1.0.0
 
 -- A short (one-line) description of the package.
-synopsis:            A lazy Set that can handle infinite sets and has fast lookup. 
+synopsis:            Set and Map from lazy/infinite lists.
 
 -- A longer description of the package.
--- description:         
+description:      A Set and Map implementation that is completly lazy and works for infinite sets and maps.    
 
 -- URL for the project homepage or repository.
 homepage:            https://github.com/happyherp/lazyset
@@ -48,6 +48,10 @@ extra-source-files:  ChangeLog.md, README.md
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.10
 
+source-repository head
+  type:     git
+  location: https://github.com/happyherp/lazyset
+  
 
 library
   -- Modules exported by the library.
@@ -80,6 +84,6 @@ Test-Suite test
 Benchmark bench
     type:       exitcode-stdio-1.0
     main-is:    Benchmark.hs
-    build-depends: base, time, containers
+    build-depends: base, time, containers, data-ordlist, timeit >= 1.0.0.0 && < 1.1
     default-language:    Haskell2010
     
