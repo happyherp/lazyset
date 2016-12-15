@@ -55,7 +55,7 @@ source-repository head
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Data.Set.Lazy
+  exposed-modules:     Data.Set.Lazy, Data.Map.Lazier
   
   -- Modules included in this library but not exported.
   -- other-modules:       
