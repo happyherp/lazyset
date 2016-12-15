@@ -44,6 +44,7 @@ Increasing the growth-factor reduces lookup times but increases the batch-size. 
 
 lookup: O(m) = log m where m is the index of the element in the source-list. 
 
+##Issues
 
 This breaks the set, because the underlying list stops producing elements. 
 ```haskell
