@@ -42,7 +42,7 @@ Elements from the Source-List will be requested in batches of increasing size. B
 Increasing the growth-factor reduces lookup times but increases the batch-size. When it is set to 1.0 it performs like a list.
 
 
-lookup: O(m) = ceil(log(growth, m))+log(2, growth*m)
+lookup: O(m) = log m where m is the index of the element in the source-list. 
 
 
 This breaks the set, because the underlying list stops producing elements. 
