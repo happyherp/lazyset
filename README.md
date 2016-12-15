@@ -2,7 +2,7 @@
 A Lazy Set and Map implemented in Haskell. 
 
 
-Allows efficient, lazy lookups on sorted lists. The sort list may be of ininite size. 
+Allows efficient, lazy lookups on sorted lists. The list may be of ininite size. 
 
 The Source-List must 
 + contain elements that implement *Ord* 
